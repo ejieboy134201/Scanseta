@@ -1,29 +1,71 @@
-// src/App.js
-import React, { useState } from 'react';
-import Dashboard1 from './components/pages/dashboard1';
-import Dashboard2 from './components/pages/scan_success';
-import Dashboard3 from './components/pages/dashboard3';
-import MedInfo from './components/pages/medinfo'; // Import your MedInfo component
+import React, { useState } from "react";
+import Dashboard from "./components/pages/dashboard";
+import UploadFile from "./components/pages/UploadFile";
+import SearchMed from "./components/pages/search_med";
+import MedInfo from "./components/pages/medinfo";
+import { getMedicineInfo } from "./components/database";
 
 function App() {
   const [currentDashboard, setCurrentDashboard] = useState(1);
+  const [medicineData, setMedicineData] = useState(null);
+  const [source, setSource] = useState(null); // This will track where the user came from
 
   const goToDashboard1 = () => setCurrentDashboard(1);
-  const goToDashboard2 = () => setCurrentDashboard(2); // Function to go to Dashboard2
-  const goToDashboard3 = () => setCurrentDashboard(3); // Function to go to Dashboard3
-  const goToMedInfo = () => setCurrentDashboard(4);    // New function for MedInfo
+  const goToScan = () => setCurrentDashboard(2);
+  const goToSearchMed = () => setCurrentDashboard(3);
+  const goToUploadFile = () => setCurrentDashboard(2); // To go back to UploadFile page
+  const goToMedInfo = () => setCurrentDashboard(4);
+
+  const handleMedicineSearch = async (medicineName) => {
+    console.log(`Searching for medicine: ${medicineName}`);
+    try {
+      const data = await getMedicineInfo(medicineName);
+      if (data) {
+        console.log("Successfully fetched medicine data:", data);
+        setMedicineData(data);
+        setSource("search"); // Set the source to search_med
+        setTimeout(() => goToMedInfo(), 0); // Ensure state updates before navigation
+      } else {
+        console.error("No data found for this medicine.");
+      }
+    } catch (err) {
+      console.error("Error fetching medicine data:", err);
+    }
+  };
+
+  const handleGoToUploadFile = () => {
+    setSource("upload"); // Set the source to uploadfile
+    setTimeout(() => goToMedInfo(), 0); // Ensure state updates before navigation
+  };
 
   return (
     <div className="App">
       {currentDashboard === 1 && (
-        <Dashboard1 
-          goToDashboard2={goToDashboard2}  // Passing goToDashboard2 to Dashboard1
-          goToDashboard3={goToDashboard3}  // Passing goToDashboard3 to Dashboard1
+        <Dashboard goToDashboard2={goToScan} goToDashboard3={goToSearchMed} />
+      )}
+      {currentDashboard === 2 && (
+        <UploadFile
+          goNext={goToSearchMed}
+          goBack={goToDashboard1}
+          goToMedInfo={handleGoToUploadFile} // Passing function to navigate to MedInfo from UploadFile
+          setMedicineData={setMedicineData}
         />
       )}
-      {currentDashboard === 2 && <Dashboard2 goNext={goToDashboard3} goBack={goToDashboard1} />}
-      {currentDashboard === 3 && <Dashboard3 goBack={goToDashboard1} goNext={goToMedInfo} />}
-      {currentDashboard === 4 && <MedInfo goToDashboard3={goToDashboard3} />}
+      {currentDashboard === 3 && (
+        <SearchMed
+          goBack={goToDashboard1}
+          handleMedicineSearch={handleMedicineSearch}
+          setMedicineData={setMedicineData}
+        />
+      )}
+      {currentDashboard === 4 && medicineData && (
+        <MedInfo
+          goBackToUploadFile={goToUploadFile}
+          goBackToSearchMed={goToSearchMed}
+          medicineData={medicineData}
+          source={source} // Passing source to MedInfo to decide where to go back
+        />
+      )}
     </div>
   );
 }

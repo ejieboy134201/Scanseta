@@ -1,28 +1,86 @@
-// src/components/pages/dashboard1.jsx
-import React from 'react';
-import '../css/medinfo.css';
-import back from '../assets/icons/medinfo/back.png'; // Ensure the path is correct
+import React, { useState } from "react";
+import "../css/medinfo.css";
+import back from "../assets/icons/medinfo/back.png"; // Ensure the path is correct
 
-const Dashboard1 = ({ goToDashboard3 }) => (
-  <div className="dashboard">
-    <div className="header">
-      <button className="back-button" onClick={goToDashboard3}>
-        <img src={back} alt="Back" className="back-icon" />
-      </button>
+const MedInfo = ({ goBackToUploadFile, goBackToSearchMed, medicineData, source }) => {
+  const [activeButton, setActiveButton] = useState("info");
 
-      <button className="medicine_name">
-        <h2>Medicine Name</h2>
-      </button>
-    </div>
+  const handleButtonClick = (buttonId) => {
+    setActiveButton(buttonId);
+  };
 
-    {/* New overall-container */}
-    <div className="overall-container">
-      <p>This is your content inside the container.</p>
-      <div className="name-container">
-        <p>This is your content inside the container.</p>
+  // Define the content dynamically based on activeButton
+  const contentMap = {
+    info: medicineData.info || medicineData.information,
+    usage: medicineData.usage || medicineData.usage,
+    complication: medicineData.complication || medicineData.compilation,
+  };
+
+  const headerTextMap = {
+    info: "Information",
+    usage: "Usage",
+    complication: "Complication",
+  };
+
+  // Dynamic back button handler based on source
+  const handleBackClick = () => {
+    if (source === "upload") {
+      goBackToUploadFile(); // Go back to the UploadFile page
+    } else if (source === "search") {
+      goBackToSearchMed(); // Go back to the SearchMed page
+    }
+  };
+
+  return (
+    <div className="dashboard">
+      <div className="header-med">
+        <button className="back-button" onClick={handleBackClick}>
+          <img src={back} alt="Back" className="back-icon" />
+        </button>
+
+        <button className="medicine_name">
+          <h2>Medicine Generic Name: </h2>
+          <p>{medicineData.generic_name}</p>
+        </button>
+      </div>
+
+      <div className="overall-container">
+        <div className="information-container">
+          <div className="header-container">
+            <p>{headerTextMap[activeButton]}</p>
+          </div>
+
+          <div className="content-container">
+            <p>{contentMap[activeButton]}</p>
+          </div>
+
+          <div className="buttons-container">
+            <button
+              id="info-button"
+              className={`toggle-button ${activeButton === "info" ? "active" : ""}`}
+              onClick={() => handleButtonClick("info")}
+            >
+              Information
+            </button>
+            <button
+              id="usage-button"
+              className={`toggle-button ${activeButton === "usage" ? "active" : ""}`}
+              onClick={() => handleButtonClick("usage")}
+            >
+              Usage
+            </button>
+            <button
+              id="complication-button"
+              className={`toggle-button ${activeButton === "complication" ? "active" : ""}`}
+              onClick={() => handleButtonClick("complication")}
+            >
+              Complication
+            </button>
+          </div>
+        </div>
       </div>
     </div>
-  </div>
-);
+  );
+};
 
-export default Dashboard1;
+export default MedInfo;
