@@ -1,1 +1,0 @@
-print("panty sa oh")
